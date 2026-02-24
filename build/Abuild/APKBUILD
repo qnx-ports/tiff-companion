@@ -1,0 +1,57 @@
+pkgname=tiff
+pkgver=4.7.0
+pkgrel=2
+pkgdesc="Provides support for the Tag Image File Format or TIFF"
+url="https://gitlab.com/libtiff/libtiff"
+arch="all"
+license="libtiff"
+depends="libwebp libjpeg-turbo libc++"
+depends_dev="zstd-dev libwebp-dev clang"
+makedepends="
+    $depends_dev
+    cmake
+    libjpeg-turbo-dev
+    python3
+    zlib-ng-dev
+    ninja
+    libc++-dev
+    "
+subpackages="$pkgname-doc $pkgname-dev $pkgname-tools libtiffxx"
+source="https://download.osgeo.org/libtiff/tiff-$pkgver.tar.gz"
+
+build() {
+    cmake -B build -G Ninja \
+    -DCMAKE_C_COMPILER=clang \
+    -DCMAKE_CXX_COMPILER=clang++ \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=MinSizeRel \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+    cmake --build build
+}
+
+check() {
+    ctest --test-dir build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}
+
+libtiffxx() {
+    pkgdesc="C++ binding to libtiff"
+    depends="tiff"
+
+    amove usr/lib/libtiffxx.so.*
+}
+
+tools() {
+    pkgdesc="Command-line utility programs for manipulating TIFF files"
+
+    amove usr/bin
+}
+
+
+sha512sums="
+a77a050d1d8777c6d86077c3c26e8d35f98717fe14bb3c049e2b82fbfbb374e96f83a0c1ff67ffb21591a9a7abf0d3e18c3d7695c96939326cc19a9712dd2492  tiff-4.7.0.tar.gz
+"
